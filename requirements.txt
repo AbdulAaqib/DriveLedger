@@ -1,0 +1,7 @@
+scikit-learn
+supabase
+web3
+numpy
+joblib
+tensorflow
+colorama
