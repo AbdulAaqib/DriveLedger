@@ -49,7 +49,7 @@ This project demonstrates how to collect, analyze, and share meaningful vehicle 
 | Supabase Schema + Integration | ✅ Complete   | Events and problems tables defined and data uploads working.          |
 | AI Classification Logic       | ✅ Complete   | `classify.py` applies rule-based or trained model inference.          |
 | Dockerized Python Pipeline    | ✅ Complete   | End-to-end pipeline runs in Docker, including Supabase upload.        |
-| Blockchain Hashing & Logging  | ✅ Complete   | `blockchain.py` setup pending for submitting hash to Sepolia testnet. |
+| Blockchain Hashing & Logging  | ✅ Complete   | `blockchain.py` setup pending for submitting hash to Polygon testnet. |
 | Frontend Dashboard            | ❌ Incomplete | React/TypeScript frontend scaffolded, fetching + display pending.     |
 
 
@@ -61,7 +61,7 @@ This project demonstrates how to collect, analyze, and share meaningful vehicle 
 | ---------------- | ---------------------------------- | ---------------------------------------- |
 | Data Source      | `python-obd` (simulated)           | Generate realistic OBD data (RPM, temp)  |
 | AI               | `scikit-learn` / `TensorFlow Lite` | Fault classification (e.g., overheating) |
-| Blockchain       | `web3.py`, Sepolia testnet         | Anchor hashed logs on-chain              |
+| Blockchain       | `web3.py`, Polygon testnet         | Anchor hashed logs on-chain              |
 | Storage          | Supabase (PostgreSQL)              | Store event logs and AI results          |
 | Frontend         | React, TypeScript, Vercel          | Dashboard for real-time insights         |
 | Containerization | Docker                             | Portable and reproducible deployment     |
@@ -94,7 +94,7 @@ DriveLedger/
 * Python 3.9+
 * Node.js & npm/yarn (for frontend)
 * Supabase account & project
-* Sepolia testnet funds
+* Polygon testnet funds
 
 ### Environment Variables
 
@@ -105,8 +105,8 @@ Create a `.env` file at project root with:
 SUPABASE_URL=your-supabase-url
 SUPABASE_KEY=your-supabase-service-role-key
 
-# Blockchain (Sepolia)
-WEB3_PROVIDER_URL=https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID
+# Blockchain (Polygon)
+WEB3_PROVIDER_URL=https://Polygon.infura.io/v3/YOUR_INFURA_PROJECT_ID
 PRIVATE_KEY=your-wallet-private-key
 
 # Misc
