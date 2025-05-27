@@ -5,7 +5,6 @@
 **Description**
 A Raspberry Pi-based system that retrieves simulated OBD (On-Board Diagnostics) data, classifies vehicle issues using AI, stores insights in Supabase, anchors proof-of-data on the blockchain, and visualizes everything on a web dashboard.
 
-**Technology**
 
 ![oaicite:6](https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=blue)
 ![oaicite:8](https://img.shields.io/badge/scikit_learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)
