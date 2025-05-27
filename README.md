@@ -31,9 +31,7 @@ A Raspberry Pi-based system that retrieves simulated OBD (On-Board Diagnostics) 
    * [Environment Variables](#environment-variables)
    * [Docker Setup](#docker-setup)
 6. [Usage](#usage)
-7. [Screenshots / Preview](#screenshots--preview)
-8. [Contributing](#contributing)
-9. [License](#license)
+
 
 ---
 
