@@ -8,15 +8,15 @@ A Raspberry Pi-based system that retrieves simulated OBD (On-Board Diagnostics) 
 ---
 | Technology          | Logo                                                                                                      |                                         |
 | ------------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------- |
-| **python-obd**      | ![oaicite:6](https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=blue))         |                                         |
-| **scikit-learn**    | ![oaicite:8]((https://img.shields.io/badge/scikit_learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white))                         |                                         |
-| **TensorFlow Lite** | ![oaicite:10](	https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=TensorFlow&logoColor=white)                                       |                                         |
-| **web3.py**         | ![oaicite:12](	https://img.shields.io/badge/web3%20js-F16822?style=for-the-badge&logo=web3.js&logoColor=white) |                                         |
-| **Supabase**        | ![oaicite:14]((https://img.shields.io/badge/Supabase-181818?style=for-the-badge&logo=supabase&logoColor=white))                                            |                                         |
-| **Next JS**           | ![oaicite:16]((https://img.shields.io/badge/next%20js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white))                                                            |                                         |
-| **TypeScript**      | ![oaicite:18]((https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white))                                        |                                         |
-| **Vercel**          | ![oaicite:20]([https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white))            |                                         |
-| **Docker**          | ![oaicite:22]((https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white))                            | ([PyPI][1], [Vercel][2], [CleanPNG][3]) |
+| **python-obd**      | ![oaicite:6](https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=blue)       |                                         |
+| **scikit-learn**    | ![oaicite:8](https://img.shields.io/badge/scikit_learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)                       |                                         |
+| **TensorFlow Lite** | ![oaicite:10](https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=TensorFlow&logoColor=white)                                       |                                         |
+| **web3.py**         | ![oaicite:12](https://img.shields.io/badge/web3%20js-F16822?style=for-the-badge&logo=web3.js&logoColor=white) |                                         |
+| **Supabase**        | ![oaicite:14](https://img.shields.io/badge/Supabase-181818?style=for-the-badge&logo=supabase&logoColor=white)                                            |                                         |
+| **Next JS**           | ![oaicite:16](https://img.shields.io/badge/next%20js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)                                                          |                                         |
+| **TypeScript**      | ![oaicite:18](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)                                       |                                         |
+| **Vercel**          | ![oaicite:20](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)            |                                         |
+| **Docker**          | ![oaicite:22](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)                            | ([PyPI][1], [Vercel][2], [CleanPNG][3]) |
 
 [1]: https://pypi.org/project/web3/?utm_source=chatgpt.com "web3 - PyPI"
 [2]: https://vercel.com/geist/icons?utm_source=chatgpt.com "Icons - Vercel"
