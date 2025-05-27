@@ -49,9 +49,9 @@ This project demonstrates how to collect, analyze, and share meaningful vehicle 
 | Supabase Schema + Integration | ✅ Complete   | Events and problems tables defined and data uploads working.          |
 | AI Classification Logic       | ✅ Complete   | `classify.py` applies rule-based or trained model inference.          |
 | Dockerized Python Pipeline    | ✅ Complete   | End-to-end pipeline runs in Docker, including Supabase upload.        |
-| Blockchain Hashing & Logging  | ❌ Incomplete | `blockchain.py` setup pending for submitting hash to Sepolia testnet. |
+| Blockchain Hashing & Logging  | ✅ Complete   | `blockchain.py` setup pending for submitting hash to Sepolia testnet. |
 | Frontend Dashboard            | ❌ Incomplete | React/TypeScript frontend scaffolded, fetching + display pending.     |
-| Final Demo + Docs Polish      | ❌ Incomplete | Video/GIF and final visuals still in progress.                        |
+
 
 ---
 
