@@ -1,5 +1,3 @@
-**DriveLedger**
-
 # DriveLedger
 
 **Description**
