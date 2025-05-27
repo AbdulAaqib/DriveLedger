@@ -12,11 +12,17 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-def generate_token_id(timestamp: str, fault: str) -> str:
-    # Combine timestamp, fault, and a random nonce for uniqueness
+def generate_token_id(timestamp: str, fault: str) -> int:
+    """
+    Generate a unique 256-bit unsigned integer token ID by hashing
+    the timestamp, fault, and a random nonce.
+    """
     nonce = random.randint(0, 1_000_000)
     token_source = f"{timestamp}|{fault}|{nonce}"
-    return hashlib.sha256(token_source.encode()).hexdigest()
+    hash_hex = hashlib.sha256(token_source.encode()).hexdigest()
+    # Convert hex string to integer
+    token_id = int(hash_hex, 16)
+    return token_id
 
 def upload_batch(results: list):
     if not results:
@@ -31,7 +37,7 @@ def upload_batch(results: list):
             "fault": r["fault"],
             "confidence": r["confidence"],
             "sensor_data": r["sensor_data"],
-            "unique_id": unique_id,
+            "unique_id": unique_id,  # uint256 as int
         }
         to_upload.append(payload)
 
@@ -50,7 +56,7 @@ def upload_single(record: dict):
         "fault": record["fault"],
         "confidence": record["confidence"],
         "sensor_data": record["sensor_data"],
-        "unique_id": unique_id,
+        "unique_id": unique_id,  # uint256 as int
     }
 
     response = supabase.table("car_data").insert(payload).execute()

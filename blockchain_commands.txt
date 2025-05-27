@@ -4,3 +4,10 @@ contract_address=0xB6D0cECcb62541fFe71D5CA7776920D8ABf2705D
 npx hardhat compile
 npx hardhat run scripts/deploy.js --network mumbai
 npx hardhat run scripts/mint.js --network mumbai
+
+
+docker build -t driveledger .
+docker run --rm driveledger
+
+
+source driveledger/bin/activate
