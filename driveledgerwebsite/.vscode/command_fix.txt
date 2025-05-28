@@ -1,0 +1,17 @@
+echo $SHELL
+echo $0    
+exec zsh
+
+echo "Shell process (\$0): $0"; echo "Shell path (\$SHELL): $SHELL"
+
+
+#!/bin/zsh
+# Force the shell to be zsh
+if [ "$0" != "zsh" ]; then
+    exec zsh
+fi 
+
+
+chmod +x .vscode/terminal.sh
+
+chsh -s /bin/zsh

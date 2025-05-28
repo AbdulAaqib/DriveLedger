@@ -169,6 +169,16 @@ def update_car_nfts_table(vin: str, token_id: int):
     else:
         supabase.table("car_nfts").insert({"vin": vin, "nfts": str(token_id)}).execute()
     print(f"✅ Supabase updated for VIN {vin} with token ID {token_id}")
+def insert_car_data_row(timestamp: str, fault: str, confidence: float, sensor_data: dict, unique_id: str):
+    """Insert a row into the `car_data` table."""
+    result = supabase.table("car_data").insert({
+        "timestamp": timestamp,
+        "fault": fault,
+        "confidence": confidence,
+        "sensor_data": sensor_data,
+        "unique_id": unique_id
+    }).execute()
+    print(f"✅ Inserted row into `car_data` for ID {unique_id}")
 
 def mint_via_hardhat():
     cmd = ["npx", "hardhat", "run", "scripts/mint.js", "--network", "mumbai"]
@@ -205,7 +215,17 @@ def main():
             if ipfs_url:
                 save_current_data(ipfs_url, token_id)
                 update_car_nfts_table(vin, token_id)
+
+                insert_car_data_row(
+                    timestamp=ts,
+                    fault=fault,
+                    confidence=conf,
+                    sensor_data={k: reading[k] for k in FEATURE_NAMES},
+                    unique_id=str(token_id)
+                )
+
                 mint_via_hardhat()
+
 
     except KeyboardInterrupt:
         print(Fore.MAGENTA + "\n🛑 Inference stopped by user." + Style.RESET_ALL)
