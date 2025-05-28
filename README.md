@@ -1,7 +1,7 @@
 # DriveLedger
 
 **Description**
-A Raspberry Pi-based system that retrieves simulated OBD (On-Board Diagnostics) data, classifies vehicle issues using AI, stores insights in Supabase, anchors proof-of-data on the blockchain, and visualizes everything on a web dashboard.
+A Raspberry Pi-based system that retrieves simulated OBD (On-Board Diagnostics) data, classifies vehicle issues using AI, stores insights in Supabase, anchors proof-of-data on the Ethereum based Polygon Blockchain, and visualizes everything on a web dashboard.
 
 
 ![oaicite:6](https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=blue)
