@@ -13,6 +13,19 @@ export function VehicleSearch() {
   const [nftData, setNftData] = useState<CarNFT | null>(null);
   const [error, setError] = useState('');
 
+  const exampleVins = [
+    'LSDT4YXX9MV5JRNG1',
+    'ARKSKSG54Z1VG1XUX',
+    'GYYMBE3A2B1U0W6JW',
+    'YSLJ0Y9H38CYU62LG',
+    'KYADP4DZ7JHCZKEA8'
+  ];
+
+  const handleRandomExample = () => {
+    const randomIndex = Math.floor(Math.random() * exampleVins.length);
+    setVin(exampleVins[randomIndex]);
+  };
+
   const handleSearch = async () => {
     if (!vin) {
       setError('Please enter a VIN');
@@ -62,6 +75,13 @@ export function VehicleSearch() {
         />
         <Button variant="outline" disabled={loading} type="submit">
           {loading ? 'Searching...' : 'Search'}
+        </Button>
+        <Button 
+          type="button" 
+          variant="ghost" 
+          onClick={handleRandomExample}
+        >
+          Random Example
         </Button>
       </form>
 

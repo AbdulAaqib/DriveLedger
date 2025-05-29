@@ -126,10 +126,10 @@ def format_opensea_metadata(timestamp, fault, confidence, sensor_data):
     })
 
     return {
-        "name": "BMW X5 Competition 2025",
+        "name": "2025 Honda Prologue",
         "description": "Security NFT for DriveLedger",
-        "external_url": "https://yourprojectwebsite.example.com",
-        "image": "https://coffee-electoral-shrimp-180.mypinata.cloud/ipfs/bafkreicyqfbd25ej2oqeeomz2xziromaxicacw64homxidce7hparv2lc4",
+        "external_url": "",
+        "image": "https://coffee-electoral-shrimp-180.mypinata.cloud/ipfs/bafybeiddnjyt3sjeb2h7rzpr6avnuve6t2xiop67qcoqnqnol2n4z2d3iq",
         "attributes": attrs
     }
 

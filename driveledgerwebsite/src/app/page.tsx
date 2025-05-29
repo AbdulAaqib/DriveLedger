@@ -116,7 +116,7 @@ export default function Home() {
         <div className="container mx-auto p-4 sm:p-8 flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading analytics data...</p>
+            <p className="text-black dark:text-muted-foreground">Loading analytics data...</p>
           </div>
         </div>
       ) : (
@@ -129,11 +129,11 @@ export default function Home() {
                 <h1 className="text-3xl sm:text-5xl font-bold mb-4 sm:mb-6 gradient-text animated-gradient">
                   AI-Powered Diagnostics. Blockchain-Backed Trust.
                 </h1>
-                <p className="text-base sm:text-lg mb-4 text-foreground">
+                <p className="text-base sm:text-lg mb-4 text-black dark:text-foreground">
                   Revolutionizing vehicle diagnostics with AI precision and blockchain security.
                 </p>
-                <p className="text-xs sm:text-sm mb-6 sm:mb-8 text-foreground/80 max-w-3xl mx-auto">
-                  This AI is a multi-class diagnostic engine that ingests a snapshot of 20 OBD-II sensor readings and outputs one of several fault categories (e.g. &quot;coolant overheat,&quot; &quot;fuel low,&quot; &quot;RPM spike,&quot; or &quot;none&quot;) with a confidence score. It standardizes inputs, runs them through a small neural network and outputs a diagnosis based on the sensor data.
+                <p className="text-xs sm:text-sm mb-6 sm:mb-8 text-black dark:text-foreground/80 max-w-3xl mx-auto">
+                  Our advanced AI diagnostic engine analyzes a snapshot of 20 OBD-II sensor readings, instantly identifying potential vehicle issues such as coolant overheating, low fuel, RPM spikes, or confirming normal operation. By standardizing inputs and processing data through a neural network, it delivers fast, accurate fault classification with a clear confidence score, helping you diagnose problems efficiently.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center">
                   <Button variant="outline" size="lg" className="w-full sm:w-auto" href="/vehicle">
@@ -186,9 +186,9 @@ export default function Home() {
                           <TableCell className="text-foreground break-words">{fault.fault}</TableCell>
                           <TableCell>
                             <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium
-                              ${fault.confidence * 100 >= 90 ? 'bg-green-500/20 text-green-100' : 
-                                fault.confidence * 100 >= 70 ? 'bg-yellow-500/20 text-yellow-100' : 
-                                'bg-destructive/20 text-destructive-foreground'}`}>
+                              ${fault.confidence * 100 >= 90 ? 'bg-green-500/20 text-green-700 dark:text-green-300' : 
+                                fault.confidence * 100 >= 70 ? 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-300' : 
+                                'bg-destructive/20 text-destructive dark:text-destructive-foreground'}`}>
                               {(fault.confidence * 100).toFixed(1)}%
                             </span>
                           </TableCell>
@@ -196,7 +196,7 @@ export default function Home() {
                             {new Date(fault.timestamp).toLocaleString()}
                           </TableCell>
                           <TableCell>
-                            <Button variant="outline" size="sm" href={`/vehicle/${fault.unique_id}`} className="w-full sm:w-auto">
+                            <Button variant="outline" size="sm" href={`/nft/${fault.unique_id}`} className="w-full sm:w-auto">
                               View
                             </Button>
                           </TableCell>

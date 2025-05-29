@@ -28,7 +28,7 @@ def generate_reading():
         "hybrid_batt_life":     random.uniform(0.0, 100.0),
         "fuel_rate":            random.uniform(0.0, 50.0),
         #"vin":                  "".join(random.choices("ABCDEFGHJKLMNPRSTUVWXYZ1234567890", k=17)),
-        "vin":                  "1HGCM82633A123456",  
+        "vin":                  "KYADP4DZ7JHCZKEA8",  
     }
 
 def stream_readings(interval_s=2.0):
