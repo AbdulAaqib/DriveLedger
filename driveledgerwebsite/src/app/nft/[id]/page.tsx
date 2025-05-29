@@ -162,7 +162,12 @@ function formatFaultName(fault: string): string {
 
 async function getNFTData(id: string) {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/nft/${id}`, {
+    // Get the protocol and host for both local and production environments
+    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+    const host = process.env.VERCEL_URL || 'localhost:3000';
+    const baseUrl = `${protocol}://${host}`;
+
+    const response = await fetch(`${baseUrl}/api/nft/${id}`, {
       next: { revalidate: 60 },
     });
 
