@@ -104,4 +104,101 @@ export async function searchCarData(searchTerm: string) {
   
   if (error) throw error;
   return data as CarData[];
+}
+
+interface FaultFrequency {
+  [key: string]: number;
+}
+
+interface FleetStatistics {
+  totalVehicles: number;
+  mostCommonFault: {
+    fault: string;
+    percentage: string;
+  } | null;
+  averageConfidence: string;
+}
+
+interface VehicleOverview {
+  vin: string;
+  faultCount: number;
+  lastFault: CarData | null;
+}
+
+// Fleet Statistics Functions
+export async function getFleetStatistics(): Promise<FleetStatistics> {
+  // Get total number of unique vehicles
+  const { data: vehicleData, error: countError } = await supabase
+    .from('car_data')
+    .select('unique_id');
+
+  if (countError) throw countError;
+
+  // Count unique vehicle IDs
+  const uniqueVehicles = new Set(vehicleData.map(d => d.unique_id));
+
+  // Get most common faults
+  const { data: faultStats, error: faultError } = await supabase
+    .from('car_data')
+    .select('fault')
+    .order('timestamp', { ascending: false });
+
+  if (faultError) throw faultError;
+
+  // Calculate fault frequency
+  const faultFrequency = faultStats?.reduce((acc: FaultFrequency, curr) => {
+    acc[curr.fault] = (acc[curr.fault] || 0) + 1;
+    return acc;
+  }, {});
+
+  const totalFaults = faultStats?.length || 0;
+  const mostCommonFault = Object.entries(faultFrequency || {})
+    .sort(([, a], [, b]) => b - a)[0];
+
+  // Get average confidence
+  const { data: confidenceData, error: confidenceError } = await supabase
+    .from('car_data')
+    .select('confidence');
+
+  if (confidenceError) throw confidenceError;
+
+  const avgConfidence = confidenceData?.reduce((sum, curr) => sum + curr.confidence, 0) / 
+    (confidenceData?.length || 1);
+
+  return {
+    totalVehicles: uniqueVehicles.size,
+    mostCommonFault: mostCommonFault ? {
+      fault: mostCommonFault[0],
+      percentage: ((mostCommonFault[1] / totalFaults) * 100).toFixed(1)
+    } : null,
+    averageConfidence: avgConfidence.toFixed(1)
+  };
+}
+
+export async function getFleetOverview(): Promise<VehicleOverview[]> {
+  // Get all vehicle data
+  const { data: allData, error: dataError } = await supabase
+    .from('car_data')
+    .select('*')
+    .order('timestamp', { ascending: false });
+
+  if (dataError) throw dataError;
+
+  // Group by unique_id and create overview
+  const vehicleMap = new Map<string, VehicleOverview>();
+  
+  allData.forEach(data => {
+    if (!vehicleMap.has(data.unique_id)) {
+      vehicleMap.set(data.unique_id, {
+        vin: data.unique_id,
+        faultCount: 1,
+        lastFault: data
+      });
+    } else {
+      const vehicle = vehicleMap.get(data.unique_id)!;
+      vehicle.faultCount++;
+    }
+  });
+
+  return Array.from(vehicleMap.values());
 } 

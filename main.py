@@ -69,12 +69,14 @@ def load_used_ids():
         except json.JSONDecodeError:
             return set()
 
+
 def save_used_id(nonce: int):
     """Append a newly used token ID into the JSON file."""
     used = load_used_ids()
     used.add(nonce)
     with open(USED_IDS_PATH, "w") as f:
         json.dump(sorted(used), f, indent=4)
+
 
 def generate_token_id() -> int:
     """Generate a random token ID not already used locally or in Supabase."""
@@ -84,7 +86,7 @@ def generate_token_id() -> int:
     result = supabase.table("car_nfts").select("nfts").execute()
     if result.data:
         for row in result.data:
-            if row["nfts"]:
+            if row.get("nfts"):
                 for tid in row["nfts"].split(","):
                     try:
                         used_ids.add(int(tid))
@@ -97,9 +99,11 @@ def generate_token_id() -> int:
             save_used_id(nonce)
             return nonce
 
+
 def preprocess(reading):
     arr = np.array([reading[n] for n in FEATURE_NAMES], dtype=np.float32)
     return scaler.transform(arr.reshape(1, -1))
+
 
 def predict_fault(x_scaled):
     interpreter.set_tensor(input_details[0]["index"], x_scaled)
@@ -107,6 +111,7 @@ def predict_fault(x_scaled):
     probs = interpreter.get_tensor(output_details[0]["index"])[0]
     idx   = int(np.argmax(probs))
     return fault_codes[idx], float(probs[idx])
+
 
 def format_opensea_metadata(timestamp, fault, confidence, sensor_data):
     attrs = [
@@ -124,9 +129,10 @@ def format_opensea_metadata(timestamp, fault, confidence, sensor_data):
         "name": "BMW X5 Competition 2025",
         "description": "Security NFT for DriveLedger",
         "external_url": "https://yourprojectwebsite.example.com",
-        "image": "https://lime-capable-hookworm-182.mypinata.cloud/ipfs/bafkreicyqfbd25ej2oqeeomz2xziromaxicacw64homxidce7hparv2lc4",
+        "image": "https://coffee-electoral-shrimp-180.mypinata.cloud/ipfs/bafkreicyqfbd25ej2oqeeomz2xziromaxicacw64homxidce7hparv2lc4",
         "attributes": attrs
     }
+
 
 def upload_to_pinata(json_data, filename):
     url = "https://api.pinata.cloud/pinning/pinJSONToIPFS"
@@ -150,6 +156,7 @@ def upload_to_pinata(json_data, filename):
         print(f"❌ Pinata upload failed: {resp.status_code} {resp.text}")
         return None
 
+
 def save_current_data(ipfs_url, unique_id):
     os.makedirs(os.path.dirname(CURRENT_DATA_PATH), exist_ok=True)
     payload = {
@@ -160,25 +167,29 @@ def save_current_data(ipfs_url, unique_id):
         json.dump(payload, f, indent=4)
     print(f"✅ Saved current data to {CURRENT_DATA_PATH}")
 
+
 def update_car_nfts_table(vin: str, token_id: int):
     result = supabase.table("car_nfts").select("nfts").eq("vin", vin).execute()
     if result.data:
-        current_nfts = result.data[0]["nfts"] or ""
+        current_nfts = result.data[0].get("nfts") or ""
         new_nfts = f"{current_nfts},{token_id}" if current_nfts else str(token_id)
         supabase.table("car_nfts").update({"nfts": new_nfts}).eq("vin", vin).execute()
     else:
         supabase.table("car_nfts").insert({"vin": vin, "nfts": str(token_id)}).execute()
     print(f"✅ Supabase updated for VIN {vin} with token ID {token_id}")
-def insert_car_data_row(timestamp: str, fault: str, confidence: float, sensor_data: dict, unique_id: str):
-    """Insert a row into the `car_data` table."""
+
+def insert_car_data_row(timestamp: str, fault: str, confidence: float, sensor_data: dict, unique_id: str, ipfs_link: str):
+    """Insert a row into the `car_data` table, including the IPFS link."""
     result = supabase.table("car_data").insert({
         "timestamp": timestamp,
         "fault": fault,
         "confidence": confidence,
         "sensor_data": sensor_data,
-        "unique_id": unique_id
+        "unique_id": unique_id,
+        "ipfs_link": ipfs_link
     }).execute()
-    print(f"✅ Inserted row into `car_data` for ID {unique_id}")
+    print(f"✅ Inserted row into `car_data` for ID {unique_id} with IPFS link")
+
 
 def mint_via_hardhat():
     cmd = ["npx", "hardhat", "run", "scripts/mint.js", "--network", "mumbai"]
@@ -221,11 +232,11 @@ def main():
                     fault=fault,
                     confidence=conf,
                     sensor_data={k: reading[k] for k in FEATURE_NAMES},
-                    unique_id=str(token_id)
+                    unique_id=str(token_id),
+                    ipfs_link=ipfs_url
                 )
 
                 mint_via_hardhat()
-
 
     except KeyboardInterrupt:
         print(Fore.MAGENTA + "\n🛑 Inference stopped by user." + Style.RESET_ALL)

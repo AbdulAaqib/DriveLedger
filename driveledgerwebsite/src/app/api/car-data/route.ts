@@ -6,6 +6,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const uniqueId = searchParams.get('uniqueId');
+    const ids = searchParams.get('ids');
     const limit = searchParams.get('limit');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
@@ -16,6 +17,12 @@ export async function GET(request: Request) {
     // Filter by unique_id if provided
     if (uniqueId) {
       query = query.eq('unique_id', uniqueId);
+    }
+
+    // Filter by multiple NFT IDs if provided
+    if (ids) {
+      const nftIds = ids.split(',').map(id => id.trim());
+      query = query.in('unique_id', nftIds);
     }
 
     // Filter by date range if provided
