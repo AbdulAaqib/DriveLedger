@@ -4,6 +4,8 @@
 A Raspberry Pi-based system that retrieves simulated OBD (On-Board Diagnostics) data, classifies vehicle issues using AI, stores insights in Supabase, anchors proof-of-data on the Ethereum based Polygon Blockchain, and visualizes everything on a web dashboard.
 
 **Link to Live Website : https://drive-ledger.vercel.app/**
+
+**Tech Stack**
 ![oaicite:6](https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=blue)
 ![oaicite:6](https://img.shields.io/badge/Ethereum-3C3C3D?style=for-the-badge&logo=Ethereum&logoColor=white)
 ![oaicite:8](https://img.shields.io/badge/scikit_learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)
