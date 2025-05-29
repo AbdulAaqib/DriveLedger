@@ -1,17 +1,20 @@
 import { createClient } from '@supabase/supabase-js';
 
-if (!process.env.SUPABASE_URL) {
-  throw new Error('Missing SUPABASE_URL environment variable');
+// Get environment variables, with fallbacks for edge functions
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
+
+if (!supabaseUrl) {
+  throw new Error('Missing Supabase URL environment variable');
 }
 
-if (!process.env.SUPABASE_KEY) {
-  throw new Error('Missing SUPABASE_KEY environment variable');
+if (!supabaseKey) {
+  throw new Error('Missing Supabase key environment variable');
 }
 
-export const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_KEY
-);
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: { persistSession: false }
+});
 
 // Types for our database tables
 export interface CarData {

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { getOpenSeaNftUrl } from '@/app/utils/nft';
-import { getBaseUrl } from '@/lib/utils';
+import { headers } from 'next/headers';
 
 type JSONValue = string | number | boolean | null | JSONValue[] | { [key: string]: JSONValue };
 
@@ -163,16 +163,23 @@ function formatFaultName(fault: string): string {
 
 async function getNFTData(id: string) {
   try {
-    const baseUrl = getBaseUrl();
-    const response = await fetch(`${baseUrl}/api/nft/${id}`, {
+    const headersList = headers();
+    const host = headersList.get('host') || 'localhost:3000';
+    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+    
+    const response = await fetch(`${protocol}://${host}/api/nft/${id}`, {
       next: { revalidate: 60 },
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
     if (!response.ok) {
       if (response.status === 404) {
         return null;
       }
-      throw new Error('Failed to fetch NFT data');
+      const errorText = await response.text();
+      throw new Error(`Failed to fetch NFT data: ${errorText}`);
     }
 
     return response.json();
@@ -183,132 +190,137 @@ async function getNFTData(id: string) {
 }
 
 export default async function NFTPage({ params }: { params: { id: string } }) {
-  const data = await getNFTData(params.id);
+  try {
+    const data = await getNFTData(params.id);
 
-  if (!data || !data.nftData) {
-    notFound();
-  }
+    if (!data || !data.nftData) {
+      notFound();
+    }
 
-  const { nftData, ipfsData } = data;
-  const selectedIPFSData = formatSelectedIPFSData(ipfsData);
+    const { nftData, ipfsData } = data;
+    const selectedIPFSData = formatSelectedIPFSData(ipfsData);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/90 to-background/80">
-      <div className="container mx-auto py-8 px-4">
-        <div className="mb-6">
-          <Link 
-            href="/vehicle" 
-            className="inline-flex items-center space-x-2 text-primary hover:text-primary/80 transition-colors"
-          >
-            <span>←</span>
-            <span>Back to Search</span>
-          </Link>
-        </div>
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background/90 to-background/80">
+        <div className="container mx-auto py-8 px-4">
+          <div className="mb-6">
+            <Link 
+              href="/vehicle" 
+              className="inline-flex items-center space-x-2 text-primary hover:text-primary/80 transition-colors"
+            >
+              <span>←</span>
+              <span>Back to Search</span>
+            </Link>
+          </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* NFT Image and Details Card */}
-          <Card className="glass-card overflow-hidden">
-            <CardHeader className="border-b border-white/10 dark:border-white/5">
-              <CardTitle className="text-3xl font-bold gradient-text">
-                {selectedIPFSData?.name || `NFT #${params.id}`}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 space-y-6">
-              {selectedIPFSData?.image && (
-                <div className="relative aspect-video w-full overflow-hidden rounded-xl border-2 border-white/10 dark:border-white/5">
-                  <Image
-                    src={selectedIPFSData.image}
-                    alt={selectedIPFSData.name || 'NFT Image'}
-                    fill
-                    className="object-cover hover:scale-105 transition-transform duration-500"
-                    priority
-                  />
-                </div>
-              )}
-              
-              <div className="space-y-4">
-                {selectedIPFSData?.description && (
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-primary">Description</h3>
-                    <p className="text-lg">{selectedIPFSData.description}</p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            {/* NFT Image and Details Card */}
+            <Card className="glass-card overflow-hidden">
+              <CardHeader className="border-b border-white/10 dark:border-white/5">
+                <CardTitle className="text-3xl font-bold gradient-text">
+                  {selectedIPFSData?.name || `NFT #${params.id}`}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                {selectedIPFSData?.image && (
+                  <div className="relative aspect-video w-full overflow-hidden rounded-xl border-2 border-white/10 dark:border-white/5">
+                    <Image
+                      src={selectedIPFSData.image}
+                      alt={selectedIPFSData.name || 'NFT Image'}
+                      fill
+                      className="object-cover hover:scale-105 transition-transform duration-500"
+                      priority
+                    />
                   </div>
                 )}
                 
-                <div className="space-y-2">
-                  <a 
-                    href={getOpenSeaNftUrl(params.id)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 hover:opacity-80 transition-opacity"
-                  >
-                    <span className="text-lg">Open on</span>
-                    <Image
-                      src="/OpenSea-Full-Logo (dark).png"
-                      alt="OpenSea"
-                      width={120}
-                      height={32}
-                      className="object-contain dark:invert"
-                    />
-                  </a>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Vehicle Data Card */}
-          <Card className="glass-card">
-            <CardHeader className="border-b border-white/10 dark:border-white/5">
-              <CardTitle className="text-2xl font-bold gradient-text">Vehicle Data</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-primary">Timestamp</h3>
-                  <p className="text-lg">{new Date(nftData.timestamp).toLocaleString()}</p>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-primary">Fault</h3>
-                  <p className="text-lg font-semibold">{formatFaultName(nftData.fault)}</p>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-primary">AI Confidence Diagnosis</h3>
-                  <div className="relative pt-1">
-                    <div className="flex mb-2 items-center justify-between">
-                      <div>
-                        <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-primary bg-primary/10">
-                          {(nftData.confidence * 100).toFixed(2)}%
-                        </span>
-                      </div>
+                <div className="space-y-4">
+                  {selectedIPFSData?.description && (
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium text-primary">Description</h3>
+                      <p className="text-lg">{selectedIPFSData.description}</p>
                     </div>
-                    <div className="overflow-hidden h-2 text-xs flex rounded-full bg-primary/10">
-                      <div
-                        style={{ width: `${nftData.confidence * 100}%` }}
-                        className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center transition-all duration-500 ${
-                          nftData.confidence * 100 >= 90 ? 'bg-green-500' :
-                          nftData.confidence * 100 >= 70 ? 'bg-yellow-500' :
-                          'bg-red-500'
-                        }`}
+                  )}
+                  
+                  <div className="space-y-2">
+                    <a 
+                      href={getOpenSeaNftUrl(params.id)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 hover:opacity-80 transition-opacity"
+                    >
+                      <span className="text-lg">Open on</span>
+                      <Image
+                        src="/OpenSea-Full-Logo (dark).png"
+                        alt="OpenSea"
+                        width={120}
+                        height={32}
+                        className="object-contain dark:invert"
                       />
+                    </a>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Vehicle Data Card */}
+            <Card className="glass-card">
+              <CardHeader className="border-b border-white/10 dark:border-white/5">
+                <CardTitle className="text-2xl font-bold gradient-text">Vehicle Data</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium text-primary">Timestamp</h3>
+                    <p className="text-lg">{new Date(nftData.timestamp).toLocaleString()}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium text-primary">Fault</h3>
+                    <p className="text-lg font-semibold">{formatFaultName(nftData.fault)}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium text-primary">AI Confidence Diagnosis</h3>
+                    <div className="relative pt-1">
+                      <div className="flex mb-2 items-center justify-between">
+                        <div>
+                          <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-primary bg-primary/10">
+                            {(nftData.confidence * 100).toFixed(2)}%
+                          </span>
+                        </div>
+                      </div>
+                      <div className="overflow-hidden h-2 text-xs flex rounded-full bg-primary/10">
+                        <div
+                          style={{ width: `${nftData.confidence * 100}%` }}
+                          className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center transition-all duration-500 ${
+                            nftData.confidence * 100 >= 90 ? 'bg-green-500' :
+                            nftData.confidence * 100 >= 70 ? 'bg-yellow-500' :
+                            'bg-red-500'
+                          }`}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* Sensor Data Card */}
-        {nftData.sensor_data && (
-          <Card className="glass-card">
-            <CardHeader className="border-b border-white/10 dark:border-white/5">
-              <CardTitle className="text-2xl font-bold gradient-text">Sensor Data</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              {formatSensorData(nftData.sensor_data)}
-            </CardContent>
-          </Card>
-        )}
+          {/* Sensor Data Card */}
+          {nftData.sensor_data && (
+            <Card className="glass-card">
+              <CardHeader className="border-b border-white/10 dark:border-white/5">
+                <CardTitle className="text-2xl font-bold gradient-text">Sensor Data</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                {formatSensorData(nftData.sensor_data)}
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  } catch (error) {
+    console.error('Error in NFT page:', error);
+    throw error; // Let Next.js error boundary handle it
+  }
 } 
