@@ -49,17 +49,23 @@ export async function GET() {
       .select('unique_id, fault, timestamp, confidence, sensor_data')
       .not('fault', 'is', null);
 
+    console.log('Car data from DB:', carData);
+
     const carDataRecords = (carData || []) as CarDataRecord[];
 
     // Create a map of NFT ID to VIN
     const nftToVin = new Map(nftData.map(nft => [nft.id, nft.vin]));
+    console.log('NFT to VIN mapping:', Object.fromEntries(nftToVin));
 
     // Process the data to get counts and latest faults
     const vehicleMap = new Map<string, VehicleData>();
     
     carDataRecords.forEach((record) => {
       const vin = nftToVin.get(record.unique_id);
-      if (!vin) return; // Skip if no matching VIN found
+      if (!vin) {
+        console.log('No VIN found for record:', record.unique_id);
+        return;
+      }
 
       const existing = vehicleMap.get(vin);
       if (!existing) {
@@ -83,6 +89,8 @@ export async function GET() {
       }
     });
 
+    console.log('Processed vehicle map:', Object.fromEntries(vehicleMap));
+
     // Transform the data to match the expected format
     const fleetData = Array.from(vehicleMap.values()).map((vehicle: VehicleData) => ({
       vin: vehicle.vin,
@@ -94,6 +102,8 @@ export async function GET() {
         sensor_data: vehicle.sensor_data || {}
       } : null
     }));
+
+    console.log('Final fleet data:', fleetData);
 
     return NextResponse.json(fleetData);
   } catch (error) {

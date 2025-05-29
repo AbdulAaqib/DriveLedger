@@ -16,7 +16,8 @@ import {
   Title,
   Tooltip,
   Legend,
-  Colors
+  Colors,
+  ArcElement
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 
@@ -27,6 +28,7 @@ ChartJS.register(
   PointElement,
   LineElement,
   BarElement,
+  ArcElement,
   Title,
   Tooltip,
   Legend,
@@ -78,6 +80,9 @@ export default function FleetPage() {
           return res.json();
         });
 
+        console.log('Fleet Stats:', statsData);
+        console.log('Fleet Overview:', fleetOverview);
+
         setStats(statsData);
         setFleetData(fleetOverview);
       } catch (err) {
@@ -93,26 +98,52 @@ export default function FleetPage() {
 
   // Process data for charts
   const processChartData = () => {
-    if (!fleetData || fleetData.length === 0) return null;
+    if (!fleetData || fleetData.length === 0) {
+      console.log('No fleet data available');
+      return {
+        availableMetrics: [],
+        metricAverages: {}
+      };
+    }
 
-    const allSensorData = fleetData.flatMap(vehicle => 
-      vehicle.lastFault?.sensor_data ? [vehicle.lastFault.sensor_data] : []
-    );
+    // Get all sensor data that exists
+    const allSensorData = fleetData
+      .filter(vehicle => {
+        const hasSensorData = vehicle.lastFault?.sensor_data;
+        if (!hasSensorData) {
+          console.log('Vehicle missing sensor data:', vehicle.vin);
+        }
+        return hasSensorData;
+      })
+      .map(vehicle => vehicle.lastFault!.sensor_data);
+
+    console.log('All sensor data:', allSensorData);
+
+    if (allSensorData.length === 0) {
+      console.log('No sensor data found in any vehicle');
+      return {
+        availableMetrics: [],
+        metricAverages: {}
+      };
+    }
 
     // Get all available metrics from the first data point
-    const availableMetrics = allSensorData.length > 0 
-      ? Object.keys(allSensorData[0])
-      : [];
+    const availableMetrics = Object.keys(allSensorData[0] || {});
+    console.log('Available metrics:', availableMetrics);
 
     // Calculate average values for each metric
     const metricAverages = availableMetrics.reduce((acc, metric) => {
       const values = allSensorData
         .map(data => data[metric])
-        .filter(val => val !== undefined);
+        .filter(val => val !== undefined && val !== null);
       
-      acc[metric] = values.reduce((sum, val) => sum + val, 0) / values.length;
+      acc[metric] = values.length > 0
+        ? values.reduce((sum, val) => sum + val, 0) / values.length
+        : 0;
       return acc;
     }, {} as Record<string, number>);
+
+    console.log('Metric averages:', metricAverages);
 
     return {
       availableMetrics,
@@ -121,28 +152,32 @@ export default function FleetPage() {
   };
 
   const chartData = processChartData();
+  console.log('Chart data:', chartData);
 
   const metricBarData = {
-    labels: fleetData.map(v => v.vin.slice(-6)),
+    labels: fleetData
+      .filter(v => v.lastFault?.sensor_data && v.lastFault.sensor_data[selectedMetric] !== undefined)
+      .map(v => v.vin.slice(-6)),
     datasets: [{
       label: selectedMetric.replace(/_/g, ' ').toUpperCase(),
       data: fleetData
-        .filter(v => v.lastFault && v.lastFault.sensor_data && selectedMetric in v.lastFault.sensor_data)
+        .filter(v => v.lastFault?.sensor_data && v.lastFault.sensor_data[selectedMetric] !== undefined)
         .map(v => v.lastFault!.sensor_data[selectedMetric]),
       backgroundColor: 'rgba(75, 192, 192, 0.5)',
       borderColor: 'rgb(75, 192, 192)',
       borderWidth: 1
     }]
   };
+  console.log('Metric bar data:', metricBarData);
 
   const faultDistributionData = {
-    labels: ['High Confidence', 'Medium Confidence', 'Low Confidence'],
+    labels: ['High Confidence (>80%)', 'Medium Confidence (50-80%)', 'Low Confidence (<50%)'],
     datasets: [{
-      label: 'Fault Distribution by Confidence',
+      label: 'Number of Faults',
       data: [
-        fleetData.filter(v => v.lastFault && v.lastFault.confidence > 0.8).length,
-        fleetData.filter(v => v.lastFault && v.lastFault.confidence > 0.5 && v.lastFault.confidence <= 0.8).length,
-        fleetData.filter(v => v.lastFault && v.lastFault.confidence <= 0.5).length,
+        fleetData.filter(v => v.lastFault?.confidence && v.lastFault.confidence > 0.8).length,
+        fleetData.filter(v => v.lastFault?.confidence && v.lastFault.confidence > 0.5 && v.lastFault.confidence <= 0.8).length,
+        fleetData.filter(v => v.lastFault?.confidence && v.lastFault.confidence <= 0.5).length,
       ],
       backgroundColor: [
         'rgba(34, 197, 94, 0.5)',
@@ -157,6 +192,7 @@ export default function FleetPage() {
       borderWidth: 1
     }]
   };
+  console.log('Fault distribution data:', faultDistributionData);
 
   if (loading) {
     return (
@@ -181,56 +217,56 @@ export default function FleetPage() {
   }
 
   return (
-    <main className="py-8">
+    <main className="py-4 sm:py-8">
       <div className="container mx-auto px-4">
         {/* Global Stats */}
-        <section className="mb-12">
-          <h1 className="text-3xl font-bold mb-8">Fleet Insights</h1>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <section className="mb-6 sm:mb-12">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-8">Fleet Insights</h1>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg text-muted-foreground">Vehicles Monitored</CardTitle>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-base sm:text-lg text-muted-foreground">Vehicles Monitored</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-4xl font-bold">{stats?.totalVehicles || 0}</p>
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <p className="text-3xl sm:text-4xl font-bold">{stats?.totalVehicles || 0}</p>
               </CardContent>
             </Card>
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg text-muted-foreground">Most Common Issues</CardTitle>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-base sm:text-lg text-muted-foreground">Most Common Issues</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-xl">
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <p className="text-lg sm:text-xl break-words">
                   {stats?.mostCommonFault ? 
                     `${stats.mostCommonFault.fault} (${stats.mostCommonFault.percentage}%)` :
                     'No faults recorded'}
                 </p>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg text-muted-foreground">Average Fault Confidence</CardTitle>
+            <Card className="sm:col-span-2 lg:col-span-1">
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-base sm:text-lg text-muted-foreground">Average Fault Confidence</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-4xl font-bold">{stats?.averageConfidence || 0}%</p>
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <p className="text-3xl sm:text-4xl font-bold">{stats?.averageConfidence || 0}%</p>
               </CardContent>
             </Card>
           </div>
         </section>
 
         {/* Charts Section */}
-        <section className="mb-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <section className="mb-6 sm:mb-12 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           <Card>
-            <CardHeader>
-              <CardTitle>Fleet-wide Sensor Metrics</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl">Fleet-wide Sensor Metrics</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6">
               <div className="mb-4">
                 <Select 
                   value={selectedMetric} 
                   onValueChange={setSelectedMetric}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Select metric" />
                   </SelectTrigger>
                   <SelectContent>
@@ -242,123 +278,199 @@ export default function FleetPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="h-[300px]">
-                <Bar 
-                  data={metricBarData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        position: 'top' as const,
+              <div className="h-[250px] sm:h-[300px]">
+                {metricBarData.labels.length > 0 ? (
+                  <Bar 
+                    data={metricBarData}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          position: 'top' as const,
+                          labels: {
+                            boxWidth: 12,
+                            padding: 10,
+                            font: {
+                              size: window.innerWidth < 640 ? 10 : 12
+                            }
+                          }
+                        },
+                        title: {
+                          display: false
+                        }
                       },
-                      title: {
-                        display: false
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                          title: {
+                            display: true,
+                            text: selectedMetric.replace(/_/g, ' ').toUpperCase(),
+                            font: {
+                              size: window.innerWidth < 640 ? 10 : 12
+                            }
+                          },
+                          ticks: {
+                            font: {
+                              size: window.innerWidth < 640 ? 10 : 12
+                            }
+                          }
+                        },
+                        x: {
+                          ticks: {
+                            font: {
+                              size: window.innerWidth < 640 ? 10 : 12
+                            }
+                          }
+                        }
                       }
-                    }
-                  }}
-                />
+                    }}
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center">
+                    <p className="text-muted-foreground text-sm sm:text-base">No sensor data available</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Fault Confidence Distribution</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl">Fault Confidence Distribution</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="h-[300px]">
-                <Bar 
-                  data={faultDistributionData}
-                  options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                      legend: {
-                        position: 'top' as const,
+            <CardContent className="p-4 sm:p-6">
+              <div className="h-[250px] sm:h-[300px]">
+                {faultDistributionData.datasets[0].data.some(d => d > 0) ? (
+                  <Bar 
+                    data={faultDistributionData}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          position: 'top' as const,
+                          labels: {
+                            boxWidth: 12,
+                            padding: 10,
+                            font: {
+                              size: window.innerWidth < 640 ? 10 : 12
+                            }
+                          }
+                        },
+                        title: {
+                          display: false
+                        }
                       },
-                      title: {
-                        display: false
+                      scales: {
+                        y: {
+                          beginAtZero: true,
+                          title: {
+                            display: true,
+                            text: 'Number of Faults',
+                            font: {
+                              size: window.innerWidth < 640 ? 10 : 12
+                            }
+                          },
+                          ticks: {
+                            font: {
+                              size: window.innerWidth < 640 ? 10 : 12
+                            }
+                          }
+                        },
+                        x: {
+                          ticks: {
+                            font: {
+                              size: window.innerWidth < 640 ? 10 : 12
+                            }
+                          }
+                        }
                       }
-                    }
-                  }}
-                />
+                    }}
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center">
+                    <p className="text-muted-foreground text-sm sm:text-base">No fault data available</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
         </section>
 
         {/* Vehicle Table */}
-        <section className="mb-12">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">Vehicle Overview</h2>
-            <div className="flex gap-4">
+        <section className="mb-6 sm:mb-12">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold">Vehicle Overview</h2>
+            <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-2 sm:gap-4">
               <Input
                 type="search"
                 placeholder="Search VIN..."
-                className="max-w-[300px]"
+                className="w-full sm:w-[200px] lg:w-[300px]"
               />
-              <Button variant="secondary">Filter</Button>
+              <Button variant="secondary" className="w-full sm:w-auto">Filter</Button>
             </div>
           </div>
-          <Card>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>VIN</TableHead>
-                    <TableHead>Total Faults</TableHead>
-                    <TableHead>Last Fault</TableHead>
-                    <TableHead>Last Confidence</TableHead>
-                    <TableHead>Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {fleetData.map((vehicle) => (
-                    <TableRow key={vehicle.vin}>
-                      <TableCell className="font-medium">{vehicle.vin}</TableCell>
-                      <TableCell>{vehicle.faultCount}</TableCell>
-                      <TableCell>
-                        {vehicle.lastFault ? 
-                          `${vehicle.lastFault.fault} (${new Date(vehicle.lastFault.timestamp).toLocaleString()})` :
-                          'No faults'}
-                      </TableCell>
-                      <TableCell>
-                        {vehicle.lastFault && (
-                          <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                            vehicle.lastFault.confidence > 0.8 ? 
-                              'bg-green-100 text-green-700' : 
-                              vehicle.lastFault.confidence > 0.5 ?
-                                'bg-yellow-100 text-yellow-700' :
-                                'bg-red-100 text-red-700'
-                          }`}>
-                            {(vehicle.lastFault.confidence * 100).toFixed(1)}%
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Button variant="outline" size="sm" href={`/vehicle/${vehicle.vin}`}>
-                          View
-                        </Button>
-                      </TableCell>
+          <div className="overflow-x-auto">
+            <Card>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[120px]">VIN</TableHead>
+                      <TableHead className="min-w-[100px]">Total Faults</TableHead>
+                      <TableHead className="min-w-[200px]">Last Fault</TableHead>
+                      <TableHead className="min-w-[120px]">Last Confidence</TableHead>
+                      <TableHead className="min-w-[80px]">Action</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {fleetData.map((vehicle) => (
+                      <TableRow key={vehicle.vin}>
+                        <TableCell className="font-medium">{vehicle.vin}</TableCell>
+                        <TableCell>{vehicle.faultCount}</TableCell>
+                        <TableCell className="break-words">
+                          {vehicle.lastFault ? 
+                            `${vehicle.lastFault.fault} (${new Date(vehicle.lastFault.timestamp).toLocaleString()})` :
+                            'No faults'}
+                        </TableCell>
+                        <TableCell>
+                          {vehicle.lastFault && (
+                            <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                              vehicle.lastFault.confidence > 0.8 ? 
+                                'bg-green-100 text-green-700' : 
+                                vehicle.lastFault.confidence > 0.5 ?
+                                  'bg-yellow-100 text-yellow-700' :
+                                  'bg-red-100 text-red-700'
+                            }`}>
+                              {(vehicle.lastFault.confidence * 100).toFixed(1)}%
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Button variant="outline" size="sm" href={`/vehicle/${vehicle.vin}`} className="w-full sm:w-auto">
+                            View
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
         </section>
 
         {/* Export Data */}
         <section>
           <Card>
-            <CardHeader>
-              <CardTitle>Export Data</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl">Export Data</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
                 <Select>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Select format" />
                   </SelectTrigger>
                   <SelectContent>
@@ -366,7 +478,7 @@ export default function FleetPage() {
                     <SelectItem value="json">JSON</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button>Export Data</Button>
+                <Button className="w-full sm:w-auto">Export Data</Button>
               </div>
             </CardContent>
           </Card>

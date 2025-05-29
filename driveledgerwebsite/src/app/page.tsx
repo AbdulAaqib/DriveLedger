@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/Button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -17,7 +18,6 @@ import {
   ArcElement
 } from 'chart.js';
 import { Line, Pie } from 'react-chartjs-2';
-import { useEffect, useState } from "react";
 import { getLatestFaults } from "@/lib/api"
 
 // Register ChartJS components
@@ -113,7 +113,7 @@ export default function Home() {
   return (
     <main>
       {loading ? (
-        <div className="container mx-auto p-8 flex items-center justify-center min-h-screen">
+        <div className="container mx-auto p-4 sm:p-8 flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
             <p className="text-muted-foreground">Loading analytics data...</p>
@@ -122,24 +122,24 @@ export default function Home() {
       ) : (
         <>
           {/* Hero Section */}
-          <section className="relative overflow-hidden py-20">
+          <section className="relative overflow-hidden py-12 sm:py-20">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent"></div>
             <div className="glass-container relative z-10">
-              <div className="max-w-4xl mx-auto text-center">
-                <h1 className="text-5xl font-bold mb-6 gradient-text animated-gradient">
+              <div className="max-w-4xl mx-auto text-center px-4">
+                <h1 className="text-3xl sm:text-5xl font-bold mb-4 sm:mb-6 gradient-text animated-gradient">
                   AI-Powered Diagnostics. Blockchain-Backed Trust.
                 </h1>
-                <p className="text-lg mb-4 text-foreground">
+                <p className="text-base sm:text-lg mb-4 text-foreground">
                   Revolutionizing vehicle diagnostics with AI precision and blockchain security.
                 </p>
-                <p className="text-sm mb-8 text-foreground/80 max-w-3xl mx-auto">
+                <p className="text-xs sm:text-sm mb-6 sm:mb-8 text-foreground/80 max-w-3xl mx-auto">
                   This AI is a multi-class diagnostic engine that ingests a snapshot of 20 OBD-II sensor readings and outputs one of several fault categories (e.g. &quot;coolant overheat,&quot; &quot;fuel low,&quot; &quot;RPM spike,&quot; or &quot;none&quot;) with a confidence score. It standardizes inputs, runs them through a small neural network and outputs a diagnosis based on the sensor data.
                 </p>
-                <div className="flex gap-4 justify-center">
-                  <Button variant="outline" size="lg" href="/vehicle">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center">
+                  <Button variant="outline" size="lg" className="w-full sm:w-auto" href="/vehicle">
                     Search by VIN
                   </Button>
-                  <Button variant="outline" size="lg" href="/fleet">
+                  <Button variant="outline" size="lg" className="w-full sm:w-auto" href="/fleet">
                     View Fleet Insights
                   </Button>
                 </div>
@@ -148,15 +148,15 @@ export default function Home() {
           </section>
 
           {/* Stakeholder Value Section */}
-          <section className="py-16">
-            <div className="glass-container">
-              <h2 className="text-3xl font-bold text-center mb-12 gradient-text">Who We Serve</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <section className="py-8 sm:py-16">
+            <div className="glass-container px-4">
+              <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12 gradient-text">Who We Serve</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
                 {stakeholders.map((item) => (
-                  <div key={item.label} className="glass-card p-6">
-                    <div className="text-4xl mb-4">{item.icon}</div>
-                    <h3 className="text-xl font-semibold mb-2 gradient-text">{item.label}</h3>
-                    <p className="text-foreground">{item.text}</p>
+                  <div key={item.label} className="glass-card p-4 sm:p-6">
+                    <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">{item.icon}</div>
+                    <h3 className="text-lg sm:text-xl font-semibold mb-2 gradient-text">{item.label}</h3>
+                    <p className="text-sm sm:text-base text-foreground">{item.text}</p>
                   </div>
                 ))}
               </div>
@@ -164,57 +164,59 @@ export default function Home() {
           </section>
 
           {/* Latest Fault Events Table */}
-          <section className="py-16">
-            <div className="glass-container">
-              <h2 className="text-3xl font-bold mb-8 gradient-text">Latest Fault Events</h2>
+          <section className="py-8 sm:py-16">
+            <div className="glass-container px-4">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 gradient-text">Latest Fault Events</h2>
               <div className="glass-card overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-b border-border/50">
-                      <TableHead className="text-foreground">ID</TableHead>
-                      <TableHead className="text-foreground">Fault</TableHead>
-                      <TableHead className="text-foreground">Confidence</TableHead>
-                      <TableHead className="text-foreground">Time</TableHead>
-                      <TableHead className="text-foreground">Action</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {faultData.slice(0, 3).map((fault) => (
-                      <TableRow key={fault.unique_id} className="border-b border-border/50 hover:bg-background/5">
-                        <TableCell className="font-medium text-foreground">{fault.unique_id}</TableCell>
-                        <TableCell className="text-foreground">{fault.fault}</TableCell>
-                        <TableCell>
-                          <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium
-                            ${fault.confidence * 100 >= 90 ? 'bg-green-500/20 text-green-100' : 
-                              fault.confidence * 100 >= 70 ? 'bg-yellow-500/20 text-yellow-100' : 
-                              'bg-destructive/20 text-destructive-foreground'}`}>
-                            {(fault.confidence * 100).toFixed(1)}%
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-foreground">
-                          {new Date(fault.timestamp).toLocaleString()}
-                        </TableCell>
-                        <TableCell>
-                          <Button variant="outline" size="sm" href={`/vehicle/${fault.unique_id}`}>
-                            View
-                          </Button>
-                        </TableCell>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-b border-border/50">
+                        <TableHead className="text-foreground min-w-[100px]">ID</TableHead>
+                        <TableHead className="text-foreground min-w-[120px]">Fault</TableHead>
+                        <TableHead className="text-foreground min-w-[100px]">Confidence</TableHead>
+                        <TableHead className="text-foreground min-w-[160px]">Time</TableHead>
+                        <TableHead className="text-foreground min-w-[80px]">Action</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {faultData.slice(0, 3).map((fault) => (
+                        <TableRow key={fault.unique_id} className="border-b border-border/50 hover:bg-background/5">
+                          <TableCell className="font-medium text-foreground break-all">{fault.unique_id}</TableCell>
+                          <TableCell className="text-foreground break-words">{fault.fault}</TableCell>
+                          <TableCell>
+                            <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium
+                              ${fault.confidence * 100 >= 90 ? 'bg-green-500/20 text-green-100' : 
+                                fault.confidence * 100 >= 70 ? 'bg-yellow-500/20 text-yellow-100' : 
+                                'bg-destructive/20 text-destructive-foreground'}`}>
+                              {(fault.confidence * 100).toFixed(1)}%
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-foreground text-sm">
+                            {new Date(fault.timestamp).toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            <Button variant="outline" size="sm" href={`/vehicle/${fault.unique_id}`} className="w-full sm:w-auto">
+                              View
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             </div>
           </section>
 
           {/* Visual Charts Section */}
-          <section className="py-16">
-            <div className="glass-container">
-              <h2 className="text-3xl font-bold mb-8 gradient-text">Analytics Overview</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="glass-card p-6">
-                  <h3 className="text-xl font-semibold mb-4 gradient-text">Fault Type Distribution</h3>
-                  <div className="h-64">
+          <section className="py-8 sm:py-16">
+            <div className="glass-container px-4">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 gradient-text">Analytics Overview</h2>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
+                <div className="glass-card p-4 sm:p-6">
+                  <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 gradient-text">Fault Type Distribution</h3>
+                  <div className="h-[250px] sm:h-[300px]">
                     <Pie 
                       data={pieChartData}
                       options={{
@@ -223,6 +225,13 @@ export default function Home() {
                         plugins: {
                           legend: {
                             position: 'right' as const,
+                            labels: {
+                              boxWidth: 12,
+                              padding: 8,
+                              font: {
+                                size: window.innerWidth < 640 ? 10 : 12
+                              }
+                            }
                           },
                           title: {
                             display: false
@@ -231,13 +240,13 @@ export default function Home() {
                       }}
                     />
                   </div>
-                  <p className="text-sm text-muted-foreground mt-4 text-center">
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-3 sm:mt-4 text-center">
                     Distribution of different fault types detected by our AI
                   </p>
                 </div>
-                <div className="glass-card p-6">
-                  <h3 className="text-xl font-semibold mb-4 gradient-text">Model Accuracy</h3>
-                  <div className="h-64">
+                <div className="glass-card p-4 sm:p-6">
+                  <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 gradient-text">Model Accuracy</h3>
+                  <div className="h-[250px] sm:h-[300px]">
                     <Line
                       data={accuracyData}
                       options={{
@@ -246,6 +255,13 @@ export default function Home() {
                         plugins: {
                           legend: {
                             position: 'top' as const,
+                            labels: {
+                              boxWidth: 12,
+                              padding: 8,
+                              font: {
+                                size: window.innerWidth < 640 ? 10 : 12
+                              }
+                            }
                           },
                           title: {
                             display: false
@@ -257,20 +273,36 @@ export default function Home() {
                             max: 100,
                             title: {
                               display: true,
-                              text: 'Accuracy (%)'
+                              text: 'Accuracy (%)',
+                              font: {
+                                size: window.innerWidth < 640 ? 10 : 12
+                              }
+                            },
+                            ticks: {
+                              font: {
+                                size: window.innerWidth < 640 ? 10 : 12
+                              }
                             }
                           },
                           x: {
                             title: {
                               display: true,
-                              text: 'Date'
+                              text: 'Date',
+                              font: {
+                                size: window.innerWidth < 640 ? 10 : 12
+                              }
+                            },
+                            ticks: {
+                              font: {
+                                size: window.innerWidth < 640 ? 10 : 12
+                              }
                             }
                           }
                         }
                       }}
                     />
                   </div>
-                  <p className="text-sm text-muted-foreground mt-4 text-center">
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-3 sm:mt-4 text-center">
                     Model accuracy trend over time
                   </p>
                 </div>
