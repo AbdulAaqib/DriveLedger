@@ -14,7 +14,7 @@ A Raspberry Pi-based system that retrieves simulated OBD (On-Board Diagnostics) 
 ![oaicite:18](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 ![oaicite:20](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
 ![oaicite:22](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
-![oaicite:22](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white))
+![oaicite:22](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
 
 
 [1]: https://pypi.org/project/web3/?utm_source=chatgpt.com "web3 - PyPI"
