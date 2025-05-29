@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { getOpenSeaNftUrl } from '@/app/utils/nft';
+import { getBaseUrl } from '@/lib/utils';
 
 type JSONValue = string | number | boolean | null | JSONValue[] | { [key: string]: JSONValue };
 
@@ -162,11 +163,7 @@ function formatFaultName(fault: string): string {
 
 async function getNFTData(id: string) {
   try {
-    // Get the protocol and host for both local and production environments
-    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
-    const host = process.env.VERCEL_URL || 'localhost:3000';
-    const baseUrl = `${protocol}://${host}`;
-
+    const baseUrl = getBaseUrl();
     const response = await fetch(`${baseUrl}/api/nft/${id}`, {
       next: { revalidate: 60 },
     });
