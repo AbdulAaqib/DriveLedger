@@ -56,7 +56,7 @@ This project demonstrates how to collect, analyze, and share meaningful vehicle 
 | AI Classification Logic       | ✅ Complete   | `classify.py` applies rule-based or trained model inference.          |
 | Dockerized Python Pipeline    | ✅ Complete   | End-to-end pipeline runs in Docker, including Supabase upload.        |
 | Blockchain Hashing & Logging  | ✅ Complete   | `blockchain.py` setup pending for submitting hash to Polygon testnet. |
-| Frontend Dashboard            | ❌ Incomplete | React/TypeScript frontend scaffolded, fetching + display pending.     |
+| Frontend Dashboard            | ✅ Complete | Next js React + TypeScript frontend scaffolded, fetching + display pending.     |
 
 
 ---
@@ -69,7 +69,7 @@ This project demonstrates how to collect, analyze, and share meaningful vehicle 
 | AI               | `scikit-learn` / `TensorFlow Lite` | Fault classification (e.g., overheating) |
 | Blockchain       | `web3.py`, Polygon testnet         | Anchor hashed logs on-chain              |
 | Storage          | Supabase (PostgreSQL)              | Store event logs and AI results          |
-| Frontend         | React, TypeScript, Vercel          | Dashboard for real-time insights         |
+| Frontend         | Next js React, TypeScript, Vercel          | Dashboard for real-time insights         |
 | Containerization | Docker                             | Portable and reproducible deployment     |
 
 ---
@@ -78,16 +78,42 @@ This project demonstrates how to collect, analyze, and share meaningful vehicle 
 
 ```
 DriveLedger/
-├── Dockerfile             # Container setup for Python app
-├── requirements.txt       # Python dependencies
-├── main.py                # Orchestrator: data fetch -> classify -> upload
-├── simulate_obd.py        # Simulate OBD data stream
-├── classify.py            # AI model training & inference logic
-├── supabase_client.py     # Supabase upload helper
-├── blockchain.py          # Hash data & submit on-chain
-└── frontend/              # React/TypeScript dashboard
-    ├── package.json
-    └── src/...
+├── main.py                       # Master script: reads sensor data, runs ML, pins
+│                                 # results to IPFS, logs to Supabase, mints NFT.
+├── simulate_obd.py               # Generates / streams synthetic OBD-II readings.
+├── supabase_client.py            # Small helper layer around the Supabase REST API.
+│
+├── generate_fake_training_data.py# Script to create synthetic datasets for model dev.
+├── classify_tensorboard.py       # Visualise model-training metrics in TensorBoard.
+├── export_all_to_csv.py          # Dump Supabase tables to CSV for offline analysis.
+│
+├── blockchain_commands.txt       # Handy on-chain CLI snippets & contract addresses.
+├── training_data.csv             # Example raw training data (CSV format).
+│
+├── requirements.txt              # Python dependencies.
+├── Dockerfile                    # Builds a Python + Node image so main.py can call
+│                                 # `npx hardhat` inside the container.
+│
+├── package.json                  # Node dependencies (Hardhat, ethers, etc.).
+├── package-lock.json             # Locked versions for reproducible Node builds.
+│
+├── used_ids.json                 # Local cache of already-minted NFT token IDs.
+├── used_nonces.json              # (Optional) tracks contract nonces for advanced flows.
+│
+├── logs/                         # Trained ML artifacts.
+│   └── …                         # e.g. model.tflite, scaler.pkl, fault_codes.pkl
+│
+├── obd_model_tf/                 # Original TensorFlow training notebooks/scripts.
+│
+├── driverledger-deploy/          # Hardhat project for Solidity contracts + mint script.
+│   ├── scripts/mint.js           # Called by main.py to mint the NFT on Polygon.
+│   └── …                         # Contracts, tests, Hardhat config, etc.
+│
+├── driveledgerwebsite/           # React/TypeScript front-end dashboard.
+│   └── …                         # Components, pages, assets.
+│
+├── node_modules/                 # Installed automatically by npm / during Docker build.
+└── __pycache__/                  # Python byte-code cache (auto-generated).
 ```
 
 ---
@@ -108,15 +134,16 @@ Create a `.env` file at project root with:
 
 ```ini
 # Supabase
-SUPABASE_URL=your-supabase-url
-SUPABASE_KEY=your-supabase-service-role-key
+SUPABASE_URL=
+SUPABASE_KEY=
 
 # Blockchain (Polygon)
-WEB3_PROVIDER_URL=https://Polygon.infura.io/v3/YOUR_INFURA_PROJECT_ID
-PRIVATE_KEY=your-wallet-private-key
+WEB3_PROVIDER_URL=
+PRIVATE_KEY=
 
-# Misc
-PI_DEVICE_ID=raspberry-pi-01
+# Pinata IPFS
+PINATA_API_KEY=
+PINATA_SECRET_API_KEY=
 ```
 
 ### Docker Setup
@@ -124,8 +151,8 @@ PI_DEVICE_ID=raspberry-pi-01
 Build and run the service in Docker:
 
 ```bash
-docker build -t vehicle-ai-blockchain .
-docker run --env-file .env vehicle-ai-blockchain
+docker build -t driveledger .
+docker run --rm driveledger
 ```
 
 ---
